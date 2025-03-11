@@ -1,45 +1,55 @@
+import firebase_admin
+from firebase_admin import credentials, firestore
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+# Conectar a Firebase
+cred = credentials.Certificate("firebase_config.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
+
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-tasks = [
-    {"id": 1, "name": "Hacer compritas"},
-    {"id": 2, "name": "Practicar Python"},
-    {"id": 3, "name": "Revisar emails"}
-]
-
-# Ruta para obtener las tareas
+# Obtener tareas desde Firestore
 @app.route('/api/tasks', methods=['GET'])
 def get_tasks():
+    tasks_ref = db.collection("tasks")  # La colección en Firestore
+    docs = tasks_ref.stream()
+    tasks = [{"id": doc.id, **doc.to_dict()} for doc in docs]  # Convertir a JSON
     return jsonify(tasks)
 
-# Para agregar nuevas tareas
+# Agregar una nueva tarea a Firestore
 @app.route('/api/tasks', methods=['POST'])
 def add_task():
-    print("Headers recibidos:", request.headers)
-    print("Datos recibidos:", request.data)
+    data = request.get_json()
+    if not data or "name" not in data:
+        return jsonify({"error": "Falta el nombre de la tarea"}), 400
+    
+    new_task_ref = db.collection("tasks").add({"name": data["name"]})
+    return jsonify({"id": new_task_ref[1].id, "name": data["name"]}), 201
 
-    if request.content_type != "application/json":
-        return jsonify({"error": "Content-Type debe ser application/json"}), 415
+#modifica alguna tarea
+@app.route('/api/tasks/<task_id>', methods=['PUT'])
+def update_task(task_id):
+    data = request.get_json()
+    if not data or "name" not in data:
+        return jsonify({"error": "Falta el nombre de la tarea"}), 400
+    
+    task_ref = db.collection("tasks").document(task_id)
+    task_ref.update({"name": data["name"]})
 
+    return jsonify({"id": task_id, "name": data["name"]})
+
+@app.route('/api/tasks/<task_id>', methods=['DELETE'])
+def delete_task(task_id):
     try:
-        data = request.get_json()
-        print("JSON recibido:", data)
-
-        if not data or "name" not in data:  # 👈 Este if debe estar dentro del try
-            return jsonify({"error": "Falta el nombre de la tarea"}), 400
-
-        new_task = {
-            "id": len(tasks) + 1,
-            "name": data["name"]
-        }
-        tasks.append(new_task)
-        return jsonify(new_task), 201
-
+        print(f"Solicitud para eliminar tarea con ID: {task_id}")  
+        db.collection("tasks").document(task_id).delete()
+        return jsonify({"message": "Tarea eliminada correctamente"}), 200
     except Exception as e:
-        return jsonify({"error": f"Error procesando JSON: {str(e)}"}), 400
+        print(f"Error eliminando tarea: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
