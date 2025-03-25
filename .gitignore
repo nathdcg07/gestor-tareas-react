@@ -1,0 +1,33 @@
+# Node.js dependencies
+node_modules/
+.npm/
+.yarn/
+
+# Directorios de compilación
+build/
+dist/
+.parcel-cache/
+.next/
+
+# Archivos de entorno (NO SUBIR VARIABLES PRIVADAS)
+.env
+.env.local
+.env.development
+.env.production
+
+# Archivos específicos de Firebase
+firebase-debug.log
+firebase-debug.*
+firebase.json
+firestore.rules
+storage.rules
+
+# Configuración de Git
+.git/
+.gitignore
+
+# Logs y archivos temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
