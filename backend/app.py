@@ -30,16 +30,26 @@ def add_task():
     return jsonify({"id": new_task_ref[1].id, "name": data["name"]}), 201
 
 #modifica alguna tarea
-@app.route('/api/tasks/<task_id>', methods=['PUT'])
+@app.route("/api/tasks/<task_id>", methods=["PUT"])
 def update_task(task_id):
-    data = request.get_json()
-    if not data or "name" not in data:
-        return jsonify({"error": "Falta el nombre de la tarea"}), 400
-    
-    task_ref = db.collection("tasks").document(task_id)
-    task_ref.update({"name": data["name"]})
+    try:
+        data = request.get_json()
+        update_data = {}
 
-    return jsonify({"id": task_id, "name": data["name"]})
+        if "name" in data:
+            update_data["name"] = data["name"]
+        if "completed" in data:
+            update_data["completed"] = data["completed"]
+
+        if update_data:
+            db.collection("tasks").document(task_id).update(update_data)
+            return jsonify({"msg": "Tarea actualizada con éxito"}), 200
+        else:
+            return jsonify({"error": "No se enviaron datos válidos"}), 400
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route('/api/tasks/<task_id>', methods=['DELETE'])
 def delete_task(task_id):
