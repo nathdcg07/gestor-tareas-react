@@ -24,6 +24,9 @@ a:hover {
 
 body {
   margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: transparent;
   min-width: 320px;
   min-height: 100vh;
   display: grid;
@@ -71,7 +74,8 @@ button:focus-visible {
   }
 }
 .task-input {
-  width: 100%;
+  flex: auto;
+  min-width: auto;
   padding: 1rem 1.5rem;
   font-size: 1.1rem;
   border-radius: 12px;
@@ -82,17 +86,18 @@ button:focus-visible {
   transition: border 0.3s ease;
 }
 
+
 .task-input:focus {
   border-color: #f7c948;
 }
 
 body.light {
-    background: linear-gradient(to top right, #ffe4e6, #dbeafe, #e9d5ff);
-    color: #1f2937; /* text-gray-800 */
+    background: linear-gradient(to top right, #ffe4e6, #f5d88b, #93831f);
+    color: #241401; /* text-gray-800 */
   }
   
   body.dark {
-    background-color: #111827; /* gray-900 */
+    background-color: #321c01; /* gray-900 */
     color: #f3f4f6; /* gray-100 */
   }
   
